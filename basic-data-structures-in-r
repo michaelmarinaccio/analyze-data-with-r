@@ -1,0 +1,156 @@
+#-----------------------------------vectors----------------------------------------
+
+Vectors are the most basic data structure in R. A vector contains elements of the same type, whether they’re numericals, doubles, characters, logical (TRUE or FALSE), or complex numbers. 
+Vectors are one-dimensional, meaning they have just one length. We create vectors using the function c(), separating values inside by commas.
+There are two basic built-in functions that can be used with vectors:
+  length(vec) returns the number of elements in a vector called vec
+  typeof(vec) gets the data type of elements in vec
+We can make a vector of consecutive integers (whole numbers) like so:
+  one_thru_ten <- c(1:10)
+  print(one_thru_ten)
+  #output: [1]  1  2  3  4  5  6  7  8  9 10
+We can also define a range and an interval size using seq(): seq(start_number, end_number, by = interval_size).
+Here, we want a vector with 0.5 size intervals between 3 and 5.
+  intervals <- seq(3, 5, by = 0.5)
+  print(intervals)
+  # output: [1] 3.0 3.5 4.0 4.5 5.0
+
+#-----------------------------------vectors II----------------------------------------
+
+Vectors are sequential, meaning they keep data in order. The indexing, or the way you refer to the position of the data, starts from 1. 
+We can look up the ith element of a vector v by calling v[i]. 
+We can also select multiple elements by specifying indices in a vector: example_vector[c(3, 5)], example_vector[c(1:4)]
+
+#-----------------------------------vectors III----------------------------------------
+
+We can modify an item in a vector or the vector as a whole in various ways. To modify an item, we can call its index and setting it to a new value. 
+Below, we’re setting the second element of the vector to 7.
+  change_me <- c(7, 11, -28, 32, 5, 19)
+  # sets second element to 7
+  change_me[2] <- 7
+  print(change_me)
+  # output [1]  7   7 -28  32   5  19
+We can also use comparison operators — which will generate a TRUE or FALSE–to select elements that fit a certain condition. 
+Here, we’re also using the & (AND) logical operator. In the code below, once we’ve selected those values, we set them to 0.
+  change_me <- c(7, 11, -28, 32, 5)
+  # set elements in vector greater than 0 AND less than 10 to 0
+  change_me[change_me > 0 & change_me < 10] <- 0
+  print(change_me)
+  # output: [1]  0  11 -28  32   0
+We can also cut a vector short like so:
+  change_me <- c(7, 11, -28, 32, 5)
+  # Cut the vector to the portion containing second to the fourth element
+  change_me <- change_me[2:4]
+  print(change_me)
+  # output: [1]  11 -28  32
+
+#-----------------------------------matrix I----------------------------------------
+
+A matrix (plural: matrices) is a 2-D data structure that holds elements of the same type. Matrices are just like vectors, but in 2-D. 
+They’re table-like, and we refer to the two dimensions as rows and columns. In math, engineering, and economics, matrices have tons of applications, 
+which R has built-in functions for. They’re also just a common way of storing data.
+
+To create a matrix, use the matrix() function to specify what the matrix should contain, and how many rows and columns it should have. 
+The matrix() function takes three arguments:
+  The first argument should be data you’d like to keep in the matrix. If we specify just one value, the entire matrix will be filled with it. 
+    If we specify a vector, R will determine whether it should repeat throughout the matrix or if it fills the whole matrix, depending on the vector’s length. 
+    The vector’s data is inserted column-wise by default.
+  nrow = number of rows
+  ncol = number of columns
+
+The code below will create a 2 (rows) by 3 (columns) matrix of all 0s.
+  two_by_three_matrix <- matrix(0, nrow = 2, ncol = 3)
+  print(two_by_three_matrix)
+  # output:
+        [,1] [,2] [,3]
+  [1,]    0    0    0
+  [2,]    0    0    0
+
+This will create a 3 by 4 matrix with each column being "a" "b" "c"
+  abc_repeat <- matrix(c("a", "b", "c"), nrow = 3, ncol = 4)
+  print(abc_repeat)
+  # output:
+       [,1] [,2] [,3] [,4]
+  [1,] "a"  "a"  "a"  "a" 
+  [2,] "b"  "b"  "b"  "b" 
+  [3,] "c"  "c"  "c"  "c" 
+
+What about vectors that won’t fit evenly down each column? The matrix below is created from a vector of numbers 1-8, which will repeat in a 3 by 4 matrix 
+and cut off whenever there is no more space.
+  eight_matrix <- matrix(c(1:8), nrow = 3, ncol = 4)
+  print(eight_matrix)
+  # output:
+       [,1] [,2] [,3] [,4] 
+  [1,]    1    4   7   2  
+  [2,]    2    5   8   3  
+  [3,]    3    6   1   4   
+
+#-----------------------------------matrix II----------------------------------------
+
+If we think of a matrix as a table, we can look up individual elements by referring to their row first, then the column in that row. 
+We’ll find the element at the xth row, yth column using my_matrix[x,y]
+You can also grab an entire rows or columns by only specifying the row or only specifying the column, leaving the other side of the comma blank. 
+A single row or column will be returned as a vector: my_matrix[2, ], my_matrix[,3]
+
+#-----------------------------------lists I----------------------------------------
+
+Lists are data structures that can contain multiple data types, unlike vectors. They can also store lists, meaning there can be lists of lists… of lists.
+Generally, a list is created using the syntax my_list <- list(a, b, c) where a, b, c could be different data types.
+To access items in a list in R by their position, we can call the index we want in double brackets like so: third_item <- my_list[[3]]
+Modifying elements is also straightforward: my_list[[3]] <- 85.2
+
+#-----------------------------------lists II----------------------------------------
+
+Lists are useful as an organizational tool in R because you can label each piece of data inside the list with a name. 
+Instead of having to call the position of the item, you can call it by a name you gave it. The syntax to create a list with named items 
+inside is my_list <- list(name1 = a, name2 = b, name3 = c). For example:
+  # a list that has three vectors named Penny, Xavier, and Kiara
+  test_scores <- list(Penny = c(84, 79, 85), Xavier = c(89, 90, 82), Kiara = c(92, 89, 87))
+Adding names to the elements stored inside makes it easy to access them by name. To access whatever element has name1, you would ask for mylist$name1. 
+In the above example, if you wanted to get Penny’s test scores vector:
+  # get Penny's test scores (vector)
+  penny_scores <- test_scores$Penny
+  print(penny_scores)
+  # output: [1] 84 79 85
+You can name sublists as well. Recreating the list above with named list inside
+  # a list that has three vectors named Penny, Xavier, and Kiara with the name of each exam inside the vectors
+  test_scores <- list(
+    Penny = list(exam1 = 84, exam2 = 79, exam3 = 85),
+    Nick = list(exam1= 77, exam2 = 81, exam3 = 83),
+    Kiara = list(exam1 = 92, exam2 = 89, exam3 = 87)
+  )
+You can ask for Kiara’s test score from exam 1 by adding another $ with the sublist name, resulting in $Kiara$exam1.
+  print(test_scores$Kiara)
+  $exam1
+  [1] 92
+  $exam2
+  [1] 89
+  $exam3
+  [1] 87
+  > test_scores$Kiara$exam1
+  [1] 92
+
+#-----------------------------------special lists: data frames----------------------------------------
+
+Big data sets, especially ones we want to import into our R workspace, take on a common standard: a table with named columns. We can hold this data in a special form of a list called a data frame.
+A data frame is a table-like list with rows and columns, where each column has a name and each row contains a set of values, one from each column. 
+Data frames are a combination of lists (where you can name things) and matrices (tabular). They’re meant to hold spreadsheet-like data.
+
+Let’s think about the list we made last exercise, with Penny, Xavier, and Kiara’s test scores. We could organize them into a table with named columns like so:
+  Student	Exam 1	Exam 2	Exam 3	Extra Credit?
+  “Penny”	84	79	85	TRUE
+  “Xavier”	77	81	83	TRUE
+  “Kiara”	92	89	87	FALSE
+and create a data frame from the table.
+  student_scores <- data.frame(
+      student = c("Penny", "Xavier", "Kiara"), 
+      exam1 = c(84, 77, 92),
+      exam2 = c(79, 81, 89),
+      exam3 = c(85, 83, 87),
+      extra_credit = c(TRUE, TRUE, FALSE)
+  )
+Note: each column is a vector.
+
+We can select the column names using the $ sign, just like in a regular list! Below, we’re selecting the extra_credit column from the data frame we just made:
+  print(student_scores$extra_credit)
+  # output: [1] TRUE TRUE FALSE
