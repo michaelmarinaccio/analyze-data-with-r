@@ -1,0 +1,94 @@
+#-------------------------------control flow in r-------------------------------
+
+A program will run and start moving through its checklists and ask “is this condition met?” then execute a code block if the answer is yes, 
+or skip it if the answer is no. This is the Control Flow of a program.
+
+#-------------------------------if statement in r-------------------------------
+
+The most basic kind of conditional statement is an if statement. If a certain condition is true, execute this code. The syntax looks like so:
+
+  if (condition_to_check) {
+     # code to execute
+  }
+
+A short example:
+
+  a <- 10
+  if (a < 12) {
+     print("The variable a is less than 12")
+  }
+
+if is an R keyword, followed by a condition inside the parentheses. The code for the condition should evaluate to a TRUE or FALSE. 
+As a refresher, in order for a code expression to evaluate to a TRUE or FALSE value, we can use comparison operators like <, >, >=, <=, ==, and !=. 
+We can combine TRUE and FALSE values with logical operators like & (AND), | (OR), and ! (NOT).
+
+#-------------------------------if/else statements in r-------------------------------
+
+If we want a program to execute some code if a condition IS true, or some other code in case the condition is NOT true, you could add an else block to the if. 
+Below is the syntax. This is the conventional way of connecting them, with the else block directly following the closing bracket of the if block. 
+Only one of the code options will execute.
+
+  if (condition_to_check) {
+     # execute some code
+  } else {
+     # execute some other code
+  }
+
+#-------------------------------else/if statements in r-------------------------------
+
+That’s where else ifs come in. They allow us to define options that are separate from one another that we check in a strict order. 
+Whichever condition is true first, the accompanying code will run, and other conditions are not considered. 
+If none of the statements in the if and else if are true, then we will default to the code in the else block, if the else exists. 
+Note that else if always comes after if.
+
+#-------------------------------nesting conditionals in r-------------------------------
+
+So far, the code that we’ve seen hits just one outcome and ends there. If we want to add a condition that should only be checked inside of another condition, 
+we can nest if/else blocks. In the code below, we nest if and else statements in the outermost if statement. 
+Make sure when you nest conditionals that the flow of the code is still clear to you, the programmer!
+
+  if (condition_to_check) {
+    if (inner_condition_to_check) {
+       # code that will execute if both condition_to_check and inner_condition_to_check are true
+    } else {
+       # code that will execute if condition_to_check is TRUE but inner_condition_to_check is FALSE
+    }
+  } else {
+       # code that will execute if condition_to_check is FALSE
+  }
+
+#-------------------------------review-------------------------------
+
+---
+title: "Conditionals challenge"
+output: html_notebook
+---
+
+```{r}
+# defining the variables
+access_event <- FALSE
+access_music_show <- FALSE
+age <- 22
+current_hour <- 9
+possible_codeword <- "redrobbin"
+real_codeword <- "bluejay"
+```
+
+```{r}
+# conditional code goes here:
+if (age >= 21) {
+  if(possible_codeword == real_codeword)
+  access_music_show <- TRUE & print("I need to get a good spot!")
+} else {
+  access_event <- TRUE & print("I got in for the night!")
+} else if (age >= 18 and < 21) {
+    if(current_hour < 11) {
+      access_event <- TRUE & print("I can stay until 11!")
+    } else {
+      access_event <- FALSE
+      access_music_show <- FALSE
+      print("I guess I'll go somewhere else.")
+    }
+  }
+}
+```
