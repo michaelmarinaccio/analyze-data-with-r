@@ -1,0 +1,126 @@
+#----------------------------------loops-------------------------------------
+
+A loop is a control structure in programming where the instructions are written once, but a computer can execute them multiple times. 
+Each execution of those instructions is called an iteration. Loops are commonly used in programming because, compared to repeated lines of code, they save time, 
+reduce error, and are easy to read.
+
+#----------------------------------for loops-------------------------------------
+
+Using for loops, you can tell a piece of code to run a defined X number of times or to iterate through the length of a data structure. 
+The for loop requires a variable or counter that keeps track of where the current iteration is.
+When we know an exact number of times we want the code to repeat, we can set up our for loop to count from 1 to X, and the code will stop executing after the Xth iteration. 
+Below, we show the basic outline of a for loop that has a counter. We need the for keyword, a loop_variable to serve as the counter, the in keyword, 
+and a range of 1 to number_of_iterations. We refer to the code inside of the curly { } brackets as the body of the loop.
+
+  for (loop_variable in 1:number_of_iterations) {
+      # execute this code
+  }
+
+loop_variable can be used inside the loop if the number of the current iteration affects the code inside, but the variable only has meaning inside the loop. 
+If you try to use that variable outside the loop, you’ll get an error.
+
+  ---
+  title: "For loops"
+  output: html_notebook
+  ---
+  
+  ```{r}
+  for (i in 1:20) {
+       print("Hello")
+  }
+  ```
+
+The code below will print out the words in the vector my_vector, in order, one by one. The loop variable word inside the for statement here is the placeholder 
+for whichever is the current element in my_vector. The print statement will therefore print that element. On the first iteration, word equals "this". 
+On the second, word equals "vector". And so on. In this instance, the loop variable is used in the body of the loop.
+
+  my_vector <- c("this", "vector", "is", "being", "read", "by", "a", "for", "loop")
+  for(word in my_vector){
+    print(word)
+  }
+
+We can also nest for loops. An important use case is if we want to iterate through two separate indices, like rows and columns of a matrix. 
+Note that in this example, we are using the counters row and col as loop variables.
+
+  for (row in 1:nrow(a_matrix)) {
+      for (col in 1:ncol(a_matrix)) {
+          print(a_matrix[row, col])
+      }
+  }
+
+#----------------------------------while loops-------------------------------------
+
+While loops repeat a code block while a certain condition is true. While loops take a little more reasoning because we want to make sure the loop ends when we intend for it to end. 
+We also need to make sure the condition starts as true so the loop runs in the first place. First, the syntax looks like this:
+
+  while (condition_to_check) {
+      # execute this code
+  }
+
+Usually, the code inside the while loop will change the value of a variable in the condition. This allows the condition to eventually become FALSE.
+Let’s say we want a piece of code to simulate flipping a coin until it lands on heads twice. Take a pause to think about how you would code just the loop part 
+(not the coin-flipping).
+What would be our while condition? We want it to be a condition that will become FALSE when we want the loop to end. The condition could be that the flipping code 
+repeats while the number of heads is still less than two. That means we want a variable, which we can call num_heads and define as 0 to begin with, to keep track of 
+how many times we get heads. Consider what would happen if our while condition was 1 < 2, a statement that is always true. Our while loop would never end! 
+But if our condition was something like num_heads < 2, and in the loop we incremented num_heads by 1 if the coin landed on heads, then the while loop would definitely 
+end if num_heads ever became 2 or more.
+
+  ---
+  title: "While loop"
+  output: html_notebook
+  ---
+  
+  ```{r message=FALSE}
+  number_of_heads <- 0
+  heads_goal <- 5
+  coin <- c("heads", "tails")
+  while (number_of_heads < heads_goal) {
+    # flip the coin (random)
+    result <- sample(coin, 1)
+    print(result)
+    if (result == "heads") {
+      number_of_heads <- number_of_heads + 1
+    }
+  }
+  ```
+
+#----------------------------------challenges-------------------------------------
+
+---
+title: "Multiplying For Loop"
+output: html_notebook
+---
+
+```{r}
+numbers <- c(1.5, 3, 2, 4, 3, 0.25, 3)
+product <- 1
+
+# write loop code here:
+for (number in numbers) {
+  product <- number * product
+}
+
+# print result
+print(product)
+```
+
+---
+title: "Multiplying while loop"
+output: html_notebook
+---
+
+```{r}
+numbers <- c(1.5, 3, 2, 4, 3, 5, 3)
+product <- 1
+i <- 1
+
+# write while loop code here:
+while (numbers[i] != 5) {
+  product <- product * numbers[i] 
+  i <- i + 1
+}
+
+
+print(product)
+```
