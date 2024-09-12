@@ -1,0 +1,119 @@
+#---------------------------------------introduction--------------------------------------
+
+A function is a collection of several lines of code. By calling the function’s name, we execute the code inside of it. 
+We can call the function over and over again, with different arguments (inputs). The point of a function is to make code reusable, modular, and easier to read.
+
+Some basic built-in R functions include mean(), seq(), c(), and matrix(). There are also functions that come with different libraries like dplyr. 
+Each function has its own name and expected arguments.
+
+#---------------------------------------defining a function--------------------------------------
+
+We can define our own functions like so:
+
+  function_name <- function(parameter_1, parameter_2, ....) {
+     # do something with parameter_1 and parameter_2
+     return(some_value)
+  }
+
+A parameter is the name of an expected input in the function’s definition. Parameter names are used in the function definition as a placeholder for the input value. 
+The return statement defines where the code inside the function ends and gives an output. See the example below where we define a function that converts feet to meters.
+First, let’s choose a descriptive name for the function like… feet_to_meters. We expect the function to take in one number representing how many feet. 
+So let’s call that parameter feet. Inside the function, we should take the value in the feet parameter, and multiply it by 0.3048 to get meters. 
+The function will return meters.
+
+  feet_to_meters <- function(feet) {
+    meters <- feet * 0.3048
+    return(meters)
+  }
+
+#---------------------------------------apply()--------------------------------------
+
+In R, functions can be particularly useful when they’re used on a set of values stored in a data structure (like a vector). 
+Let’s say we had a vector of decimal numbers between 0 and 1 that we want to convert to percentages. If the value was 0.2, we want the result to be 20.
+First, we define a function called turn_to_percent to convert one value.
+
+  turn_to_percent <- function(decimal) {
+      decimal * 100
+  }
+
+Now let’s say that we have a vector of numbers. We want to convert all of those numbers to percents. One way we could do that is by iterating through the 
+vector with a loop. We would call the function on each individual value and tack the new value onto the resulting vector.
+
+  decimals <- c(0.45, 0.13, 0.25, 0.78, 0.66, 0.92, 0.84, 0.56)
+  percentages <- c()
+  for (d in decimals) {
+        percentages <- c(percentages, turn_to_percent(d))
+  }
+  percentages
+  # output: 45 13 25 78 66 92 84 56
+
+But that takes a lot of memory. Wouldn’t it be better if you could apply the function on all the values in the vector with just one line of code? 
+It turns out you can by using R’s built-in apply() functions. apply() functions take a data structure and a function’s name as parameters. 
+They then apply the function to the objects in the data structure, and returns the resulting objects in the same kind of data structure. 
+When we say “one of the apply() functions”, we mean that in addition to apply(), there are also variations like sapply() and lapply(), which we’ll introduce below too.
+
+Let’s break down how to use them, starting with apply().
+apply() takes a data frame or matrix, a margin value, and a function name. The margin value determines whether the function is applied to the rows (1) or columns (2) 
+of the matrix. The following code returns a vector containing the sums of either each column or each row, using apply() and the built-in R function sum().
+  
+  # matrix with 2 rows, 3 columns, all elements are 1
+  my_matrix <- matrix(1, nrow = 2, ncol = 3)
+  # apply the sum() function over each row (margin value 1)
+  apply(my_matrix, 1, sum)
+  # output: [1] 3 3
+  # apply the sum() function over each column (margin value 2)
+  apply(my_matrix, 2, sum)
+  # output: [1] 2 2 2
+
+sapply() takes any data basic data structure — vector, matrix, or list — and a function name and transforms the elements using the function. 
+sapply() returns a vector or matrix of the same length, depending on the number of dimensions required.
+
+  a_vector_or_matrix <- sapply(any_basic_data_structure, function_name)
+
+lapply() takes any data basic data structure — vector, matrix, or list — and a function name. lapply() transforms the elements and returns a list of the same length. 
+The l in lapply() stands for list!
+
+  a_list <- lapply(any_basic_data_structure, function_name)
+
+The difference between sapply() and lapply() is minimal. Choose which function to use based on the data structure you want returned.
+Let’s see them both in action. The code below accomplishes the same thing as the for loop above.
+
+Use of sapply():
+
+  turn_to_percent <- function(decimal) {
+      decimal * 100
+  }
+  
+  decimals <- c(0.45, 0.13, 0.25, 0.78, 0.66, 0.92, 0.84, 0.56)
+  percentages_sapply <- sapply(decimals, turn_to_percent)
+  percentages_sapply
+  # output: [1] 45 13 25 78 66 92 84 56
+
+Use of lapply():
+
+  percentages_lapply <- lapply(decimals, turn_to_percent)
+  # output: [[1]]
+  [1] 45
+  
+  [[2]]
+  [1] 13
+  
+  [[3]]
+  [1] 25
+  
+  [[4]]
+  [1] 78
+  
+  [[5]]
+  [1] 66
+  
+  [[6]]
+  [1] 92
+  
+  [[7]]
+  [1] 84
+  
+  [[8]]
+  [1] 56
+
+There are a few other functions in the apply() family, like mapply(), which allows functions with multiple arguments.
