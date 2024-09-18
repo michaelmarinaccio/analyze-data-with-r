@@ -1,0 +1,625 @@
+#-------------------------------------histograms------------------------------------
+
+Histograms let us visualize the distribution of a continuous variable, in contrast to bar plots which show counts and other values for discrete and categorical variables. 
+Histograms divide values of a variable into bins, which are ranges of values that get counted together.
+
+We can construct a histogram using geom_histogram():
+  
+  airquality_histogram <- 
+  ggplot(airquality, aes(x = Ozone)) +
+  labs(title = "Air Quality: Ozone Distribution") +
+  geom_histogram()
+
+By default, ggplot2 automatically calculates 30 equally sized bins. We can set the width of bins using the binwidth argument. 
+The code below creates the same plot as before, now with a binwidth of 10.
+  
+  airquality_histogram_binwidth <- 
+  ggplot(airquality, aes(x = Ozone)) + 
+  labs(title = "Air Quality: Ozone Distribution") +
+  geom_histogram(binwidth = 10)
+
+---
+title: "Histograms"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+
+# Read in our rideshare dataset
+rideshare_df <- read.csv("rideshare_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Examine rideshare_df using head()
+head(rideshare_df)
+# Construct a histogram showing the distribution of Trip.Total 
+rideshare_histogram <- ggplot(rideshare_df, aes(x = Trip.Total)) + geom_histogram()
+# Print the plot to see what it looks like
+rideshare_histogram
+# Construct our histogram again, this time adding a binwidth of 5 
+rideshare_histogram_binwidth <- ggplot(rideshare_df, aes(x = Trip.Total)) + geom_histogram(binwidth = 5)
+# Print the plot to see what it looks like
+rideshare_histogram_binwidth
+```
+
+#-------------------------------------heatmaps------------------------------------
+
+Heatmaps let us visualize frequencies along two variables. A heatmap looks like a scatterplot, but uses color-coded squares rather than individual points 
+to indicate how many cases occurred at the intersection of x and y value ranges. Like histograms, we can specify bin widths to control which ranges of values get 
+counted together.
+
+We can create heatmaps using the geom_bin2d() layer. This geom takes many of the same arguments as geom_histogram(), with slight differences given that a heatmap 
+represents two variables. Like histograms, heatmaps automatically calculate 30 equally sized bins, which may not make sense for many datasets. 
+To specify bin widths for each variable, we can pass a vector of widths instead of a single value, e.g. geom_bin2d(binwidth = c(1, 5)) to set x axis bin widths 
+to 1 and y axis bin widths to 5.
+
+  airquality_heatmap <- 
+  ggplot(airquality, 
+         aes(x = Ozone, y = Solar.R)) + 
+  labs(title = "Air Quality: Ozone and Solar Radiation") +
+  geom_bin2d(binwidth = c(25, 25))
+
+---
+title: "Heatmaps"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+
+# Read in our rideshare dataset
+rideshare_df <- read.csv("rideshare_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Construct a heatmap of trip pickup longitude and latitude
+rideshare_heatmap <- ggplot(rideshare_df, aes(x = Pickup.Centroid.Longitude, y = Pickup.Centroid.Latitude)) + geom_bin2d()
+# Print the plot to see what it looks like
+rideshare_heatmap
+# Add binwidths of 0.01 to both variables in our heatmap
+rideshare_heatmap_binwidth <- ggplot(rideshare_df, aes(x = Pickup.Centroid.Longitude, y = Pickup.Centroid.Latitude)) + geom_bin2d(binwidth = c(0.01, 0.01))
+# Print the plot to see what it looks like
+rideshare_heatmap_binwidth
+```
+
+#-------------------------------------box plots------------------------------------
+
+Box plots, also known as box-and-whisker plots, show the distribution of data by quartiles. Box plots are useful in showing how much a variable varies across 
+values of another variable – are most cases similar in value, or is there a wide range between the highest and lowest values?
+
+We can create a box plot using the geom_boxplot() layer. The code below creates the box plot shown above, visualizing temperature by month in the airquality data.
+
+  airquality_boxplot <- 
+  ggplot(airquality, 
+         aes(x = Month, y = Temp)) + 
+  labs(title = "Air Quality: Temperature by Month") +
+  geom_boxplot()
+
+Note that box plots show medians, not means. We’ll cover how to display mean values using bar plots later in this lesson.
+
+---
+title: "Box Plots"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+
+# Read in our rideshare dataset
+rideshare_df <- read.csv("rideshare_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Construct a box plot showing Trip.Total by Month
+rideshare_boxplot <- ggplot(rideshare_df, aes(x = factor(Month), y = Trip.Total)) + geom_boxplot()
+# Print the plot to see what it looks like
+rideshare_boxplot
+```
+
+#-------------------------------------stacked bar plots------------------------------------
+
+Many times we are interested in seeing percentages within our data or how different values add up. We can do this using a stacked bar plot.
+
+We specify a fill variable in our aes() mapping to tell ggplot2 which variable should be depicted as color-coded segments within our stacked bars. 
+Adding stat = "identity" to geom_bar() displays the values in our data frame as is, rather than displaying counts.
+
+  # Filter our data to include only elephants
+  msleep_filtered <- msleep %>%
+    filter(order == 'Proboscidea')
+  
+  # Construct a stacked bar plot
+  msleep_stackedbar <- 
+    ggplot(msleep_stacked_df, 
+           aes(x = name, 
+               y = hours, 
+               fill = status)) + 
+    geom_bar(stat = "identity") +
+    labs(title = "Hours of Day by Sleep State")
+
+We can explicitly add position = "stack" in our geom telling it to stack different values of the fill variable on top of each other; 
+this is also assumed by default if we don’t specify any positioning.
+
+  # This creates the same plot!
+  msleep_stackedbar <- 
+  ggplot(msleep_stacked_df, 
+         aes(x = name, 
+             y = hours, 
+             fill = status)) + 
+  geom_bar(position = "stack", 
+           stat = "identity") +
+  labs(title = "Hours of Day by Sleep State")
+
+We can also create this same plot using the geom_col() geom, which works just like geom_bar() except it assumes stat = "identity" by default.
+
+  # This also creates the same plot!
+    msleep_stackedbar <- 
+    ggplot(msleep_stacked_df, 
+           aes(x = name, 
+               y = hours, 
+               fill = status)) + 
+    geom_col() +
+    labs(title = "Hours of Day by Sleep State")
+
+---
+title: "Stacked Bar Plots"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+
+# Read in our msleep dataset
+msleep <- read.csv("msleep_cleaned.csv")
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+
+# Print the head of msleep
+head(msleep)
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df for our stacked bar plot
+graduation_stacked_df <- graduation_df %>% 
+  filter(Demographic %in% c("General Education", "Special Education")) %>%
+  group_by(Demographic, Year, Status) %>%
+  summarize(N = sum(as.numeric(N)))
+
+# Examine graduation_stacked_df using the head() function
+head(graduation_stacked_df)
+# Create a stacked bar plot named graduation_stackedbar
+graduation_stackedbar <- ggplot(graduation_stacked_df, aes(x = Demographic, y = N, fill = Status)) + geom_col()
+# Print the stacked bar plot to see what it looks like
+graduation_stackedbar
+# Create a stacked bar plot named graduation_stackedbar, this time with position="fill"
+graduation_stackedbar_fill <- ggplot(graduation_stacked_df, aes(x = Demographic, y = N, fill = Status)) + geom_col(position = "fill")
+# Print the new stacked bar plot to see what it looks like
+graduation_stackedbar_fill
+```
+
+#-------------------------------------clustered bar plots------------------------------------
+
+Instead of stacking our fill variable in our bar graphs, we can also represent values of the variable side by side. This is known as a clustered bar plot.
+
+We can easily create a clustered bar plot by setting position = "dodge" instead of position = "stack" in our geom. The dodge positioning tells ggplot2 to display 
+each value of the fill variable next to each other (as opposed to on top of each other in "stack"). Once again, we can either use geom_bar(stat = "identity") or 
+geom_col().
+
+  # Construct a clustered bar plot
+  msleep_stackedbar <- 
+    ggplot(msleep_clustered_df, 
+           aes(x = name, 
+               y = hours, 
+               fill = status)) + 
+    labs(title = "Hours of Day by Sleep State") +
+    geom_bar(position = "dodge", 
+             stat = "identity")
+  
+  # This creates the same plot!
+  msleep_stackedbar <- 
+    ggplot(msleep_clustered_df, 
+           aes(x = name, 
+               y = hours, 
+               fill = status)) + 
+    labs(title = "Hours of Day by Sleep State") +
+    geom_col(position = "dodge")
+
+---
+title: "Clustered Bar Plots"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+
+# Read in our msleep dataset
+msleep <- read.csv("msleep_cleaned.csv")
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df for our clustered bar plot
+graduation_clustered_df <- graduation_df %>% 
+  filter(Demographic %in% c("English Language Learners", "English Proficient")) %>%
+  filter(School.ID == "25Q425") %>%
+  filter(Status == "Graduated")
+
+# Examine graduation_clustered_df using the head() function
+head(graduation_clustered_df)
+# Create a clustered bar plot named graduation_clusteredbar
+graduation_clusteredbar <- ggplot(graduation_clustered_df, aes(x = Year, y = Pct, fill = Demographic)) + geom_col(position = "dodge")
+# Print the clustered bar plot to see what it looks like
+graduation_clusteredbar
+```
+
+#-------------------------------------statistical summaries------------------------------------
+
+By default, bar plots using geom_bar() show the count of observations for each value. We can also show other types of data, such as calculating and 
+showing the mean instead.
+
+Let’s say we want to see how much an animal sleeps on average by the kind of food it eats, based on the msleep dataset. The code below does just that! 
+Recall that passing stat = "identity" to a geom_bar() layer tells ggplot2 to display values as is, rather than count the number of occurrences. 
+We can similarly use stat = "summary", which tells ggplot2 to summarize values according to a provided function. We can specify fun = "mean" to summarize 
+our y axis variable by calculating mean values for each value in our x axis variable.
+  
+  # Construct a bar plot calculating and displaying means
+  msleep_meanbar <- 
+    ggplot(msleep_means_df, 
+           aes(x = diet, 
+               y = hours)) + 
+    labs(title="Mean Hours Asleep by Diet") +
+    geom_bar(stat = "summary", 
+             fun = "mean")
+
+---
+title: "Statistical Summaries"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df for our bar plot showing means
+graduation_means_df <- graduation_df %>% 
+  filter(Demographic == "Total Cohort") %>%
+  filter(Status == "Graduated") %>% 
+  mutate(Year = factor(Year))
+# Examine graduation_means_df using the head() function
+head(graduation_means_df)
+# Create a bar plot named graduation_meanbar showing means
+graduation_meanbar <- ggplot(graduation_means_df, aes(x = Year, y = Pct)) + geom_bar(stat = "summary", fun = "mean")
+# Print the bar plot to see what it looks like
+graduation_meanbar
+```
+
+#-------------------------------------error bars------------------------------------
+
+Often, we’ll want to show not only the mean of a value but also its standard error. This tells us how much variation there is around the mean – 
+are most values close to the averages shown, or is there a wide range of values above and below the average?
+
+To add error bars, we need to first calculate our standard errors. Continuing with our msleep dataset, the code below calculates means and standard errors for 
+hours asleep by diet. We compute new variables mean.hours representing the mean of hours, mean.se representing the standard error of our means, and se.min and se.max 
+representing the lower and upper bounds of our error range.
+
+  msleep_error_df <- msleep %>%
+    subset(status = "asleep") %>%
+    na.omit() %>%
+    group_by(diet) %>%
+    summarize(mean.hours = mean(hours), 
+              mean.se = std.error(hours)) %>%
+    mutate(se.min = mean.hours - mean.se, 
+           se.max = mean.hours + mean.se)
+
+We can then create our bar plot showing means and standard errors as follows. We add a geom_errorbar() layer specifying ymin and ymax variables for our error bar 
+and set its width to 0.2 of the bar’s width. Because we’ve already calculated mean values in our summary data frame, we specify stat = "identity" to display 
+the mean.hours values as is.
+
+  msleep_sebar <- 
+    ggplot(msleep_error_df, 
+           aes(x = diet, 
+               y = mean.hours)) + 
+    geom_bar(stat = "identity") + 
+    geom_errorbar(aes(ymin = se.min, 
+                      ymax = se.max), 
+                  width = 0.2) + 
+    labs(title = "Mean Hours Asleep by Diet")
+
+---
+title: "Error Bars"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+library(plotrix)
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df to calculate means and standard errors
+graduation_error_df <- graduation_df %>% 
+  filter(Demographic == "Total Cohort") %>%
+  filter(Status == "Graduated") %>%
+  group_by(Demographic, Year) %>%
+  summarize(Mean.Pct = mean(Pct), 
+            Mean.SE = std.error(Pct)) %>%
+  mutate(SE.Min = Mean.Pct - Mean.SE, 
+         SE.Max = Mean.Pct + Mean.SE, 
+         Year = factor(Year))
+
+# Examine graduation_error_df using the head() function
+head(graduation_error_df)
+# Create a bar plot named graduation_sebar showing means and standard errors
+graduation_sebar <- ggplot(graduation_error_df, aes(x = Year, y = Mean.Pct)) + geom_bar(stat = "identity") + geom_errorbar(aes(ymin = SE.Min, ymax = SE.Max), width = 0.2)
+# Print graduation_sebar to see what it looks like
+graduation_sebar
+```
+
+#-------------------------------------customizing discrete axes------------------------------------
+
+We can customize discrete variables on the x axis with the scale_x_discrete() layer. There is also a scale_y_discrete() layer that works the same way for 
+variables on the y axis.
+
+We can pass a vector to the limits argument in scale_x_discrete() to specify that we only want to show bars for c("omni", "carni", "herbi"), in that order 
+rather than the default alphabetical ordering.
+
+  msleep_start <- 
+    ggplot(msleep_error_df, 
+           aes(x = diet, 
+               y = mean.hours)) + 
+    geom_bar(stat = "identity") + 
+    geom_errorbar(aes(ymin = se.min, 
+                      ymax = se.max), 
+                  width = 0.2) + 
+    labs(title = "Mean Hours Asleep by Diet")
+  
+  msleep_discrete <- 
+    msleep_start +
+    scale_x_discrete(
+      limits = c("omni", "carni", "herbi"))
+
+We can pass a vector of value-to-label mappings to the labels argument in scale_x_discrete() to specify what we want to show for each existing value.
+
+  msleep_discrete <- 
+    msleep_start + 
+    scale_x_discrete(
+      limits = c("omni", "carni", "herbi"), 
+      labels = c("carni" = "Carnivore", 
+                 "herbi" = "Herbivore", 
+                 "omni" = "Omnivore"))
+
+---
+title: "Customizing Discrete Axes"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+library(plotrix)
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df to calculate means and standard errors
+graduation_error_df <- graduation_df %>% 
+  filter(Demographic == "Total Cohort") %>%
+  filter(Status == "Graduated") %>%
+  group_by(Demographic, Year) %>%
+  summarize(Mean.Pct = mean(Pct), 
+            Mean.SE = std.error(Pct)) %>%
+  mutate(SE.Min = Mean.Pct - Mean.SE, 
+         SE.Max = Mean.Pct + Mean.SE, 
+         Year = factor(Year))
+
+# Complete the following bar plot by adding a scale_x_discrete() layer customizing x axis labels
+graduation_discrete <- 
+  ggplot(graduation_error_df, 
+         aes(x = Year, y = Mean.Pct)) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(
+    aes(ymin = SE.Min, ymax = SE.Max), 
+    width = 0.2) + scale_x_discrete(limits = c("2003", "2004", "2005"))
+
+
+# Print graduation_discrete to see what it looks like
+graduation_discrete
+
+```
+
+#-------------------------------------customizing continuous axes------------------------------------
+
+Similarly to discrete variables, we can add a scale_x_continuous() layer to customize continuous variables on our x axis, or a scale_y_continuous() layer to 
+customize continuous variables on our y axis. We can also add a coord_cartesian layer to specify the range of values shown on a given axis, allowing us to 
+zoom in and out of the plot region.
+
+Continuing with our plot of sleep hours by diet, let’s set the y axis to be between 8 and 12. Most animals sleep at least few hours a day, so we don’t need 
+our y axis to start exactly at 0. We can adjust our y axis ranges by adding a coord_cartesian() layer and passing a vector c(8, 12) to its ylim argument, 
+specifying the min and max values of the y axis.
+
+  msleep_start <- 
+    ggplot(msleep_error_df, 
+           aes(x = diet, 
+               y = mean.hours)) + 
+    geom_bar(stat = "identity") + 
+    geom_errorbar(aes(ymin = se.min, 
+                      ymax = se.max), 
+                  width = 0.2) + 
+    scale_x_discrete(
+      limits = c("omni", "carni", "herbi"), 
+      labels = c("carni" = "Carnivore", 
+                 "herbi" = "Herbivore", 
+                 "omni" = "Omnivore")) +
+    labs(title = "Mean Hours Asleep by Diet")
+  
+  msleep_continuous <- 
+    msleep_start + 
+    coord_cartesian(ylim = c(8, 12))
+
+We can also customize the labels shown for the y axis tick marks using the breaks argument of the scale_y_continuous() layer. 
+In the code below, we pass a vector c(8, 10, 12) to specify that we only want tick marks on the y axis to appear at 8, 10, and 12.
+
+  msleep_continuous <- 
+    msleep_start + 
+    coord_cartesian(ylim = c(8, 12)) +
+    scale_y_continuous(breaks = c(8, 10, 12))
+
+Finally, we can apply custom transformations to our tick mark labels. Let’s say we want to add a unit of measurement “hrs” to each number on the y axis. 
+We can pass a custom function to the labels argument of scale_y_continuous(). Here, we are telling ggplot2 to take the automatic labels and add the characters 
+" hrs" after each label.
+
+  show_as_hours <- function(x) {
+    output <- paste0(x, " hrs")
+    return(output)
+  }
+  
+  msleep_continuous <- 
+    msleep_start + 
+    coord_cartesian(ylim = c(8, 12)) +
+    scale_y_continuous(labels = show_as_hours, 
+                       breaks = c(8, 10, 12))
+
+---
+title: "Customizing Continuous Axes"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+library(plotrix)
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df to calculate means and standard errors
+graduation_error_df <- graduation_df %>% 
+  filter(Demographic == "Total Cohort") %>%
+  filter(Status == "Graduated") %>%
+  group_by(Demographic, Year) %>%
+  summarize(Mean.Pct = mean(Pct), 
+            Mean.SE = std.error(Pct)) %>%
+  mutate(SE.Min = Mean.Pct - Mean.SE, 
+         SE.Max = Mean.Pct + Mean.SE, 
+         Year = factor(Year))
+
+
+# Complete the following bar plot by adding a scale_y_continuous layer as described
+graduation_continuous <- 
+  ggplot(graduation_error_df, 
+         aes(x = Year, y = Mean.Pct)) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(
+    aes(ymin = SE.Min, ymax = SE.Max), 
+    width = 0.2) + 
+  scale_x_discrete(
+    limits = c("2003", "2004", "2005")) + scale_y_continuous(labels = scales::label_percent())
+# Print graduation_continuous to see what it looks like
+graduation_continuous
+```
+
+#-------------------------------------facets------------------------------------
+
+Facets allow us to visualize multiple discrete variables in one plot, showing each value of the facet variable in a different section.
+
+We can add facets to our plot by adding a facet_grid() layer and specifying the variables it maps to. To show values of a facet variable as rows, 
+we specify facet_grid(rows = vars(row.var)). To show values of a facet variable as columns, we specify facet_grid(columns = vars(col.var)). 
+We can also show two facet variables in a grid, e.g. facet_grid(rows = vars(row.var), columns = vars(col.var)).
+
+  msleep_facet <- 
+    ggplot(msleep_facets_df, 
+           aes(x = diet, y = mean.hours)) + 
+    geom_bar(stat = "identity") + 
+    labs(title = "Mean Hours Asleep by Diet") +
+    scale_x_discrete(
+      limits = c("omni", "carni", "herbi"),
+      labels = c("carni" = "Carnivore",
+                 "herbi" = "Herbivore", 
+                 "omni" = "Omnivore")) +
+    facet_grid(cols = vars(order))
+
+---
+title: "Facets"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+# Load packages
+library(ggplot2)
+library(dplyr)
+
+# Read in our graduation dataset
+graduation_df <- read.csv("graduation_cleaned.csv")
+```
+
+```{r message=FALSE, warning=FALSE}
+# Process graduation_df to include the demographics we want to show
+graduation_facets_df <- graduation_df %>% 
+  filter(Demographic %in% c("English Language Learners", "English Proficient")) %>%
+  filter(School.ID %in% c("25Q425", "20K490")) %>%
+  filter(Status == "Graduated")
+
+# Complete the bar plot below by adding a facet layer
+graduation_facet <- 
+  ggplot(graduation_facets_df, 
+         aes(x = Year, 
+             y = Pct, 
+             fill = Demographic)) + 
+  geom_col(position = "dodge") + 
+  theme(legend.position = "bottom") + facet_grid(rows = vars(School.ID))
+# Print graduation_facet to see what it looks like
+graduation_facet
+```
+
+#-------------------------------------review------------------------------------
+
+How to create different geoms and when to use which type:
+
+Histograms can be created using geom_histogram() to show the distribution of a continuous variable.
+Heatmaps can be created using geom_bin2d() to show the distribution of the intersections of two continuous variables.
+Box-and-whisker plots can be created using geom_boxplot() to show the distribution of a continuous variable by quantiles, e.g. 25th, 50th, and 75th percentiles.
+Bar plots can be created using geom_bar(), which shows the count of observations for different values of a discrete variable by default. geom_col() will create bar plots showing the value of the variable on the y axis rather than counts.
+Using the position argument and a fill aesthetic mapping, we can create stacked bar plots (position = "stack"), stacked bar plots showing ratios (position = "fill"), and clustered bar plots (position = "dodge").
+How to show different statistics in our data:
+
+The stat argument allows us to display different kinds of values.
+stat = "identity" will show the y axis variable values on a bar plot as is, rather than displaying the x axis value counts.
+stat = "summary" combined with a function supplied in fun will display bar heights based on the summary function. For example, stat = "summary", fun = "mean" will calculate and display means.
+How to add error bars to bar plots to show variance around a mean:
+
+geom_error() creates error bars on bar plots when provided ymin and ymax variables representing the upper and lower bounds of error ranges.
+How to customize discrete and continuous axes:
+
+We can customize discrete axes using scale_x_discrete() and scale_y_discrete().
+We can customize continuous axes using scale_x_continuous() and scale_y_continuous()`.
+We can zoom in on a region of our data using coord_cartesian().
+How to show additional variables in panels of a grid using facets:
+
+By adding facet_grid(), we can map up to two additional variables along facet columns and rows.
