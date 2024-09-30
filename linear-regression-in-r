@@ -1,2 +1,283 @@
-boop
-boop
+#-------------------------------------introduction------------------------------------
+
+Linear Regression is the workhorse of applied Data Science; it has long been the most commonly used method by scientists and can be applied to a wide variety 
+of datasets and questions. Unlike more recently developed methods in Machine Learning, Linear Regression models can be used to predict new data points and help 
+us understand the relative impact one variable has on another. 
+
+#-------------------------------------assumptions of simple linear regression------------------------------------
+
+The most obvious (but crucial!) assumption is a linear relationship between the predictor and outcome. Following from this assumption is one key observation about 
+any variables we want to include in our model which must be tested before building a model: The expected value of the outcome variable is a straight-line function 
+of exclusively the predictor variable. The best test for this relationship is quite straightforward–– we can just visualize the relationship between the predictor 
+and outcome variables as a scatterplot. A linear relationship will resemble a straight line with a slope not equal to zero.
+
+We can also quantitatively test for a linear relationship by computing the correlation coefficient. The correlation coefficient is always between positive one and 
+negative one. A coefficient close to 0 (roughly between -0.20 and 0.20) suggests a weak linear relationship between two variables. A coefficient closer to positive 
+or negative one suggests a stronger linear relationship. In R, we can compute the correlation coefficient using the cor.test() method as follows:
+
+  coefficient <- cor.test(advertising$TV, advertising$Sales)
+  coefficient$estimate
+  # Output:
+  0.837
+
+---
+title: "Assumptions of Simple Linear Regression"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# load libraries and data
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r read_data}
+#read in data
+conversion <- read.csv("conversion.csv", header = T)
+str(conversion)
+```
+
+```{r create_viz}
+# save viz to object
+clicks_dist <- ggplot(conversion, aes(x=clicks)) + geom_bar()
+# print out viz object 
+clicks_dist
+# declare mode of clicks
+clicks_mode <- 5
+```
+
+```{r compute_cor}
+# compute correlation
+correlation <- cor.test(conversion$total_convert, conversion$clicks)
+correlation$estimate
+# print out estimate value
+
+```
+
+#-------------------------------------assumptions of linear regression (outliers)------------------------------------
+
+Linear regression models also assume that there are no extreme values in the data set that are not representative of the actual relationship between predictor 
+and outcome variables. A box-and-whisker plot is a common method used to quickly determine whether a data set contains any outliers, or data points that differ 
+significantly from other observations in a dataset. An outlier may be caused by variability in measurement, or it might be a sign of an error in the collection of data.
+
+Regardless, ggplot’s geom_boxplot() method allows for the easy creation of box-and-whisker plots. To plot the distribution of a single variable, like 
+advertising$sales––the total number of sales for a product in a month–– we pass in the same variable as both x and y in our call to geom:
+
+  plot <- advertising %>%
+    ggplot(aes(sales, sales)) +
+    geom_boxplot()
+
+In this case, it looks like there are a handful of negative sales values in the dataset. This is not what we would expect given our understanding of the data; 
+how could an entire market have negative average sales over an entire year? This seems like an error stemming from the collection of this data into a spreadsheet 
+format. In this case, we will filter out these negative datapoints from our dataset using the filter() method. We can pass a boolean argument into filter() to 
+exclude values that resolve to false.
+
+  advertising <- advertising %>% filter(Sales > 0)
+
+---
+title: "Assumptions of Linear Regression (Outliers)"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion <- read.csv('conversion.csv', header= T)
+```
+
+```{r create_viz}
+# create viz object
+clicks_bx_plot <- ggplot(conversion, aes(clicks, clicks)) + geom_boxplot()
+# print out object 
+clicks_bx_plot
+```
+
+```{r filter_data}
+# set threshold value
+threshold <- 100
+# remove outliers
+convert_clean <- conversion %>%
+  filter(clicks < 100)
+
+# create second box plot 
+clean_bx_plot <- convert_clean %>%
+  ggplot(aes(clicks, clicks)) +
+  geom_boxplot()
+clean_bx_plot
+```
+
+#-------------------------------------building a simple linear model------------------------------------
+
+Simple linear regression is not a misnomer–– it is an uncomplicated technique for predicting a continuous outcome variable, Y, on the basis of just one predictor 
+variable, X. As detailed in previous exercises, a number of assumptions are made so that we can model the relationship between X and Y as a linear function. Using 
+our advertising dataset, we could model the relationship between the amount spent on podcast advertising in a month and the number of respective products eventually 
+sold as follows:
+
+Y = beta_0 + beta_1 * X + error 
+
+Where…
+Y: represents the dollar value of products sold
+X: represents the amount spent on respective product podcast ads
+Beta_0: is the intercept, or the number of products sold when no money has been spent on podcasts
+Beta_1: is the coefficient, or the slope, of the line representing the relationship
+Error: represents the random variation in the relationship between the two variables
+
+To build this model in R, using the standard lm() package, we use the formula notation of Y ~ X:
+
+  model <- lm(sales ~ podcast, data = train)
+
+But wait! Before building this model, we need to split our data into test and training sets For the development of this simple model, we’ll use a standard 60/40 
+split of our data; where 60% is used to train the model, and 40% is used to test the model’s accuracy and generalizability. We can randomly assign data points to 
+test or training using base R’s sample() method and list indexing functionality
+
+  # specify 60/40 split
+  sample <- sample(c(TRUE, FALSE), nrow(advertising), replace = T, prob = c(0.6,0.4))
+  # subset data points into train and test sets
+  train <- advertising[sample, ]
+  test <- advertising[!sample, ]
+
+---
+title: "Building a Simple Linear Model"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+```
+
+```{r split_train_test}
+# specify 60/40 split
+data_sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6, 0.4))
+# subset data points into train and test sets
+train <- conversion_clean[data_sample, ]
+test <- conversion_clean[!data_sample, ]
+```
+
+```{r build_model}
+# build model
+model <- lm(total_convert ~ clicks, data = train)
+```
+
+#-------------------------------------quantifying model fit------------------------------------
+
+Once we have an understanding of the kind of relationship our model describes, we want to understand the extent to which this modeled relationship actually fits 
+the data. This is typically referred to as the goodness-of-fit. In simple linear models, we can measure this quantitatively by assessing two things:
+  Residual standard error (RSE)
+  R squared (R^2)
+The RSE is an estimate of the standard deviation of the error of the model (error in our mathematical definition of linear regression). Roughly speaking, it is the 
+average amount that the response will deviate from the true regression line. We get the RSE at the bottom of summary(model), we can also get it directly with
+
+  sigma(model)
+  #output
+  3.2
+
+An RSE value of 3.2 means the actual sales in each market will deviate from the true regression line by approximately 3,200 units, on average. Is this too large of 
+a deviation? Well, that’s subjective, but when compared to the average value of sales over all markets the percentage error is 22%:
+
+  sigma(model)/mean(train$sales)
+  # output
+  [1] 0.2207373
+
+The RSE provides an absolute measure of lack of fit of our model to the data. But since it is measured in the units of Y, it is not always clear what constitutes a 
+good RSE. The R^2 statistic provides an alternative measure of fit. It represents the proportion of variance explained, so it always takes on a value between 0 and 1, 
+and is independent of the scale of Y, our outcome variable. Similar to RSE, the R^2 can be found at the bottom of summary(model) but we can also extract it directly 
+by calling summary(model)$r.squared. The result below suggests that podcast advertising budget can explain 64% of the variability in the total sales value.
+
+  summary(model)$r.squared
+  # output
+  [1] 0.6372581
+
+---
+title: "Quantifying Model Fit"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+```
+
+```{r compute_rse}
+model <- lm(total_convert ~ clicks, data = train)
+# compute avg_rse
+avg_rse <- sigma(model)/mean(train$total_convert)
+#uncomment f-string below
+sprintf("The percentage error of the model is %s. Any prediction drawn from this model could be %s percent off from the actual observed value.", avg_rse, avg_rse)
+```
+
+```{r build_model2}
+model_2 <- lm(total_convert ~ impressions, data = train)
+```
+
+```{r compute_rsquare}
+# compute r-squared
+r_sq <- summary(model)$r.squared
+r_sq_2 <- summary(model_2)$r.squared
+# print out r-squared values
+r_sq
+r_sq_2
+# uncomment f-string below
+sprintf("Based on a pair of simple linear regression models, we have determined that %s percent of the variation in user purchase behavior can be explained by the number of times a user viewed on a relevant ad campaign; whereas only %s percent of this variation can be explained by the number of times a user clicked on a relevant ad.", r_sq_2*100, r_sq*100)
+```
+
+#-------------------------------------checking model residuals------------------------------------
+
+However, scientists who use regression models generally agree that the best model is the one that minimizes the distance between a data point and the estimation 
+line drawn by a model. The vertical distance between a datapoint and the line estimated by a regression model is called a residual; residuals and their aggregations 
+are the fundamental units of measures of regression model fit and accuracy.
+
+When scientists make quantitative arguments for a best fit model, they rely on an aggregation, often the sum or average, of residual values across an entire dataset. 
+While is it easy to be overwhelmed by the variety of measures used to argue that one model is better than the other, it is crucial to realize that all measures are 
+grounded in the simple difference between regression estimate and observed data point. 
+
+---
+title: "Checking Model Residuals"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+```
+
+```{r message=FALSE}
+model <- lm(total_convert ~ clicks, data = train)
+
+#save predicted and residual values to df
+train$estimate <- predict(model)
+train$residuals <- residuals(model)
+#create visualization
+plot <- ggplot(train, aes(x=clicks, y=total_convert)) + geom_point(aes(size = abs(residuals))) + geom_point(aes(y = estimate), color = "blue") + geom_segment(aes(xend = clicks, yend = estimate), color = "gray")
+plot
+```
+
+#-------------------------------------introduction------------------------------------
+
+
+
+#-------------------------------------introduction------------------------------------
+
+
+
+#-------------------------------------introduction------------------------------------
