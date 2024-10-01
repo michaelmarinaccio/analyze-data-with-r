@@ -272,12 +272,412 @@ plot <- ggplot(train, aes(x=clicks, y=total_convert)) + geom_point(aes(size = ab
 plot
 ```
 
-#-------------------------------------introduction------------------------------------
+#-------------------------------------visualizing model fit------------------------------------
 
+In addition to the quantitative measures that characterize our model accuracy, it is always a best practice to produce visual summaries to assess our model. 
+First, we should always visualize our model within our data. For simple linear regression this is quite simple; we can use geom_point() to plot our observed values, 
+and geom_smooth(method = "lm") to plot our model. In addition, we can include a second call to geom_smooth(), with parameters (se = FALSE, color = "red"). This 
+combination of function calls allows us to compare the linearity of our model, visualized below as the blue line with the 95% confidence interval covering the shaded 
+region, in comparison to a non-linear LOESS smoother visualized in red.
 
+  ggplot(train, aes(podcast, sales)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_smooth(se = FALSE, color = "red") 
 
-#-------------------------------------introduction------------------------------------
+LOESS smoothers plot a line based on the weighted value of data points; the line produced by a LOESS smoother is similar to taking a moving average of data points 
+as our x-axis variable increases. The smoother should not be used to predict new values, as it relies heavily on our training data, but it is a helpful tool for 
+visualizing where our linear model diverges from our training data.
 
+---
+title: "Visualizing Model Fit"
+output: html_notebook
+---
 
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+```
 
-#-------------------------------------introduction------------------------------------
+```{r build_viz}
+# build plot of clicks on total_convert below
+plot <- ggplot(train, aes(clicks, total_convert)) +
+geom_point() + geom_smooth(method = "lm") + geom_smooth(se = FALSE, color = "red")
+plot
+linear_relationship <- "a"
+```
+
+```{r build_model2}
+# build plot of impressions on total_convert below
+plot_2 <- ggplot(train, aes(impressions, total_convert)) +
+geom_point() + geom_smooth(method = "lm") + geom_smooth(se = FALSE, color = "red")
+plot_2
+linear_relationship_2 <- "c"
+```
+
+#-------------------------------------reading model results------------------------------------
+
+We’ve done our due diligence and confirmed that our data fulfills the assumptions of simple linear regression models; we’ve split our data into test and training 
+subsets, and properly built a model using y ~ x + b notation; we’ve even taken the time to assess the fit of our model using both quantitative and qualitative 
+approaches. Now we can finally analyze the results of our model and discover the relationship between user advertisement clicks and the purchase rate of related 
+products!
+
+We can view the results of a linear regression model in R by calling summary() on the model variable to which we saved the results of our call to lm(). The summary() 
+function will print out a lot of information about our model–– but don’t be overwhelmed! There are four primary sections of quantitative results that are crucial to 
+interpreting regression models:
+
+Call
+
+This section simple displays the call to lm() which created these model results. It’s a helpful reminder of which version of a outcome-predictor pair is currently 
+under analysis.
+
+Residuals
+
+As covered in our earlier exercises, a residual is the difference between the value of an outcome variable predicted by the model and the actual observed value of 
+the variable. The summary() output displays a set of numbers that summarize the distribution of residuals in our model, including minimum/maximum residual values, 
+the values first/third quantiles, and the median residual value for the model. We’ve already analyzed our residual values by creating a plot in an earlier exercise, 
+but these summary values are a helpful reminder of the overall spread of our model errors.
+
+Coefficients
+
+  Estimate
+  
+  Coefficients are most important results in the interpretation of regression models. The number you see in the Estimate column, (a value of 0.048939 for clicks) is 
+  called a regression coefficient. Looking back to formal definition of a linear regression model: Y = beta_0 + beta_1 * X + error The regression coefficient is 
+  represented by the beta_1 variable. This linear regression equation tells us that the regression coefficient represents the expected change in the dependent variable 
+  (in our case total_convert) for a one-unit increase in the independent variable (clicks). In other words, for every additional click on an advertisement, the expected 
+  sales of a related product are estimated to increase by 0.049 dollars. In addition to the size of the coefficient, it is also important to note the sign of the 
+  coefficient. If our clicks coefficient was negative, our model would be estimating that the sales of a product actually decreases every time an advertisement is 
+  clicked.
+  
+  Std. Error
+  
+  The column adjacent to Estimate is called Std. Error; the standard error of each coefficient is the estimate of the standard deviation of the coefficient. It is 
+  crucial to note that the standard error is not a quantity of interest by itself, but depends on the value of our regression coefficient
+  
+  T-value and Pr(>|t|)
+  
+  The t value and Pr(>|t|) inherently answer the same question–– given the value of our variable’s regression coefficient and its’ standard error, does the variable 
+  explain a significant part of the change in our outcome variable? However, the Pr(>|t|) column purposely provides a more concise response to this question, using 
+  the asterisk notation that corresponds with the Signif. codes legend at the bottom of the Coefficients results section. In R model output, one asterisk means “p < .05”. 
+  Two asterisks mean “p < .01”; and three asterisks mean “p < .001”. These values are referred to as p-values in scientific literature. How can we use p-values to answer 
+  our question around model significance?
+  
+  Asterisks in a regression table indicate the level of the statistical significance of a regression coefficient. Our understanding of statistical significance is based 
+  off of the idea of a random sample. When interpreting these asterisk values, we ask ourselves: if there truly is no relationship between clicks on an advertisement and 
+  product sales, then what are chances that, across many user clicks on an ad, we see behavior that suggests that there is no relationship?
+  
+  For our clicks variable, with *** in the Pr(>|t|) column, the answer is very unlikely. The value of ***, or p < .001, means that random sample resulting in the 
+  regression coefficient and standard error that we observed for clicks-given that there was truly no difference relationship between clicks and product purchase—would 
+  occur in less than one time in a random draw of 100, on average. Given that we would so rarely observe the situation that suggests that there is no relationship between 
+  our click and total_convert, we can say that there is a statistically significant relationship between the two variables. Generally speaking, scientists accept that a 
+  variable coefficient with p-value less than 0.05 is statistically significant.
+
+Measures of Model Fit
+
+At the bottom of the output of summary() are a series of labeled metrics, like Residual Standard Error (RSE) and Multiple R-squared, which quantify the fit of our model. 
+Our previous exercises have covered how to interpret and plot many of these measures, but it’s a helpful reminder for them to be summarized along with other model output.
+
+#-------------------------------------assessing simple linear regression------------------------------------
+
+Let’s practice our model interpretation skills! We know that for continuous independent variables, like podcasts, the regression coefficient represents the difference 
+in the predicted value of sales for each one-dollar increase in podcasts. Given the output of calling summary(model) below, we can correctly say that for every one 
+dollar increase in podcast advertisement spending, total sales of the related project increases by 1.742 dollars.
+
+  summary(model)
+  
+  #output 
+  Call:
+  lm(formula = sales ~ radio, data = train)
+  
+  Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+  (Intercept)  9.57927    0.91176  10.506  < 2e-16 ***
+  podcast      1.74240    0.03255   5.353 3.71e-07 ***
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+We could also extract the value of the podcast coefficient, the second coefficient returned by our model, using list indexing as follows:
+
+  podcast_coefficent <- model$coefficients[2] 
+
+It is important to note that the interpretation of the intercept coefficient is slightly different from that of variable coefficients. The intercept coefficient 
+represents the value we would predict for our outcome variable, sales, given that podcast spending is equal to zero. It is crucial to remember that the intercept 
+coefficient is only interpretable if we can reasonably expect a zero value for all independent variables in a model. Assuming, just as our simple linear model does, 
+that spending on podcasts is the only variable that explains changes in sales, it does not make sense for any sales to occur without podcast spending. Therefore, for 
+this model, our intercept coefficient is not interpretable.
+
+However, in many cases, intercept coefficients are interpretable! As you’ve seen throughout this lesson, the analysis of any model results requires a thorough 
+understanding of our data, the system that produces this data, and a critical approach to interpretation of coefficient values.
+
+---
+title: "Assessing Simple Linear Regression"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+```
+
+```{r message=FALSE}
+model <- lm(total_convert ~ clicks, data = train)
+model2 <- lm(total_convert ~ impressions, data = train)
+summary(model)
+summary(model2)
+clicks_coefficient <- model$coefficients[2]
+# uncomment f-string below
+sprintf("Based on a simple regression of `total_convert` by `clicks`, we estimate that for every additional click, the number of product purchases increases by %s.", clicks_coefficient)
+intercept_coefficient <- "c"
+```
+
+#-------------------------------------making predictions------------------------------------
+
+Data Scientists are often interested in building models to make predictions on new data. While the add_predictions() function from the modelr package makes it easy 
+to predict new values from a technical standpoint, it is far more difficult to develop and assess accurate predicted values.
+
+The most common metric used to compute the accuracy of predicted values is mean squared error on test data. Similar to residual squared error (RSE) and R-squared, 
+MSE measures the average squared difference between predicted and observed values. When we are working with just one model, it is helpful to compare the difference 
+between MSE on our training dataset, and MSE on test data. We can calculate training MSE for model using a combination of add_predictions() and summarise(). 
+add_predictions() creates and adds predicted values from a model to a column called pred. summarise() then allows us to calculate the mean of the squared difference 
+between our observed values (sales) and predicted values (pred).
+
+  train %>% 
+    add_predictions(model) %>%
+    summarise(MSE = mean((sales - pred)^2))
+  
+  #output
+  
+         MSE
+    31.60713
+
+We can use the same combination of functions to calculate MSE for our test dataset, which results in a MSE of around 32.5. Testing MSE will almost always be higher 
+than training MSE, as the model has been built off of training data; however, it is important to confirm that there is not a substantial difference between model 
+training and test MSE. The value of using MSE to quantify prediction accuracy is more clear when comparing multiple models, as it allows us to determine which 
+versions of a model best predicts an outcome variable. For instance, we could compute the MSE for a model of tv spending on sales.
+
+  model2 <- lm(sales ~ tv, data = train)
+  
+  train %>% 
+    add_predictions(model2) %>%
+    summarise(MSE = mean((sales - pred)^2))
+  
+  #output
+      MSE
+      27.28415
+
+Comparing the train MSE for our tv-based model, at 27.28, to our train MSE for a podcast-based model, at 31.60, it is clear that the predictions from the tv-based 
+model are more accurate, as the model’s MSE is lower. If a data scientist was trying to predict the expected volume of sales for a future business quarter, it would 
+be a better idea for them to base their estimations off of a tv-based model.
+
+---
+title: "Making Predictions"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+library(modelr)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+test <- conversion_clean[!sample, ]
+```
+
+```{r message=FALSE}
+model <- lm(total_convert ~ clicks, data = test)
+model2 <- lm(total_convert ~ impressions, data = test)
+
+```
+
+```{r message = FALSE}
+mse_clicks <- test %>%
+  add_predictions(model) %>%
+  summarise(MSE = mean((total_convert - pred)^2))
+mse_impressions <- test %>%
+  add_predictions(model2) %>%
+  summarise(MSE = mean((total_convert - pred)^2))
+mse_clicks
+mse_impressions
+plot <- test %>% 
+  add_predictions(model2) %>%
+  ggplot(aes(impressions, total_convert)) +
+  geom_point() +
+geom_point(aes(y = pred), color = "blue") 
+
+plot
+```
+
+#-------------------------------------multiple linear regression------------------------------------
+
+We’ve been able to really dig into the results of simple linear regression models and show how the results convey a substantial amount of information about the 
+relationship between two variables. However, by this point you might be wondering–– what if I think variables other than podcast have contribute to the total sales 
+of a product? You might remember that the primary assumption behind simple linear models is that the expected value of the outcome variable is a straight-line 
+function of exclusively the predictor variable. This means that our simple linear models assume that all variation in the outcome variable is explained by the 
+predictor variable. In the case of our sales dataset, we know this is almost certainly not true; oftentimes more money is spent on TV or newspaper ads than on 
+podcasts, so this spending might have an even larger effect than podcast spend.
+
+Thankfully, there are methods to include the effects of TV and newspaper in linear regression models. We can expand our model definition from a simple model of one 
+predictor variable to a multiple model of, you guessed it, multiple predictor variables. The formal definition of multiple linear regression models is a direct 
+extension of the formula for simple linear regression:
+
+Y = beta_0 + beta_1 * X + beta_2 * X + error
+
+As in a simple linear model, Y represents the dollar value of products sold, X represents the amount spent on respective product podcast ads, and Beta_0 is the model 
+intercept. Now, Beta_1, Beta_2, and Beta_3 represent each the coefficients of predictor variables. To build a similar model in R, using the standard lm() package, we 
+still use the formula notation of Y ~ X:
+
+  model <- lm(sales ~ podcast + tv, data = train)
+
+While building a multiple regression model is a straightforward extension of the code used to a build a simple model and the output of the model results below looks 
+quite similar, a bit more effort goes into the interpretation of the results of this model. Remember that in a simple linear regression model, the regression 
+coefficient represents the expected change in the dependent variable for a one-unit increase in the independent variable. In other words, the coefficient for podcast 
+represents the expected increase in sales given a one dollar increase podcast advertisement spend. Because multiple linear regression includes more than one predictor 
+variable, the coefficient estimates must be interpreted differently. In multiple linear regression, the regression coefficient represents the expected change in the 
+dependent variable for a one-unit increase in the independent variable, holding all other variables in the model constant. Expand the width of your narrative panel to 
+view the output of the multiple linear regression model below:
+
+  summary(model)
+  
+  #output
+  Call:
+  lm(formula = sales ~ TV + podcast, data = train)
+  
+  Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+  (Intercept) 4.583386   1.024616   4.473 1.65e-05 ***
+  TV          3.006340   1.004924   7.380 1.62e-11 ***
+  podcast     1.049249   1.027665   5.395 3.10e-07 ***
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+For example, a call to summary(model) shows that the coefficient for podcasts is equal to 1.04944. This means that, when one more dollar is spent on podcast 
+advertising, about 1.049 more dollars of the related product is sold, given that there is no increase in the amount of money spent on tv advertisements. In this way, 
+multiple linear regression models allow us to isolate the unique effect of one predictor variable on the outcome variable.
+
+As this example shows, the selection of variables in a regression model can have wide-ranging impacts on the results and interpretation of our models! Let’s dive into 
+one more exercise to practice building and interpreting multiple linear regression models.
+
+#-------------------------------------assessing multiple linear regression------------------------------------
+
+Time to pull it all together! The interpretation of coefficents in multiple linear regression is slightly different than that of coefficents in simple linear 
+regression. Coefficent of independent continunous variables, like podcasts, represents the difference in the predicted value of sales for each one-dollar increase in 
+podcasts, given that all other variables in the model, including tv, are held constant. Given the output of calling summary(model) below, we can correctly say that for 
+every one dollar increase in podcast advertisement spending, while holding the amount spent on tv and newspaper constant, the total sales of the related product 
+increases by 1.049 dollars.
+
+  summary(model)
+  
+  #output
+  Call:
+  lm(formula = sales ~ TV + podcast + newspaper, data = train)
+  
+  Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+  (Intercept) 4.583386   1.024616   4.473 1.65e-05 ***
+  TV          3.006340   1.004924   7.380 1.62e-11 ***
+  podcast     1.049249   1.027665   5.395 3.10e-07 ***
+  newspaper   1.006340   1.002924   6.380 1.12e-11 ***
+  ---
+  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+In addition, the interpretation of boolean categorical variables differs slightly from that of continous variables. The coefficent value associated with a boolean 
+categorical variable represents the effect of changing from one category to another. for instance, the coefficient value of 1.006 for newspaper tell us that running 
+print advertisements results in a 1.006 dollar increase in sales, holding the values of TV and podcast constant.
+
+As we’ve suggested throughout this lesson, data scientists often build many variations of a model with different combinations of independent variables before ultimately 
+commiting to the model that best fits test data. Let’s practice building, interpreting, and selecting the best fit multi-linear model for our convert_clean dataset!
+
+---
+title: "Assessing Multiple Linear Regression"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# set sampling seed
+set.seed(123)
+# load libraries and data
+library(dplyr)
+library(ggplot2)
+conversion_clean <- read.csv('conversion_clean.csv', header= T)
+# sample training data
+sample <- sample(c(TRUE, FALSE), nrow(conversion_clean), replace = T, prob = c(0.6,0.4))
+train <- conversion_clean[sample, ]
+```
+
+```{r  message=FALSE}
+# build model below
+model <- lm(total_convert ~ impressions + clicks + gender, data = train)
+summary(model)
+# define gender_coefficient below
+gender_coefficient <- "c"
+```
+
+```{r  message=FALSE}
+# build second model below
+model2 <- lm(total_convert ~ impressions + clicks, data = train)
+# compute r-squared below
+rsq_model <- summary(model)$r.squared 
+rsq_model2 <- summary(model2)$r.squared 
+rsq_model
+rsq_model2
+# define best_fit below
+best_fit <- rsq_model
+# define gender_diff below
+gender_diff <- rsq_model - rsq_model2
+sprintf("Based on the results of a series of multiple linear regressions on total_convert, we estimate that user gender accounts for approximately %s percent of the variation in product purchase rate.", gender_diff*100)
+```
+
+#-------------------------------------review------------------------------------
+
+Whew, that’s a wrap! You’ve covered a lot of material related to linear regression and its implementation in R. Here are the main concepts we’ve covered:
+
+Statistical model building entails four main steps: 1) confirming data assumptions, 2) building a model on training data, 3) assessing model fit, and 4) analyzing 
+model results.
+
+We can use a combination of qualitative methods, such as box-plots, and quantitative methods, like the correlation coefficient, to assess that data meets our assumptions
+
+We use the lm() method and Y ~ X notation to build a linear regression model. The Y variable is referred to as the outcome variable of the model, and any X variable 
+is referred to as the predictor variable.
+
+We can use a similar set of qualitative and quantitative methods to evaluate the fit of our model, including a comparison of the plotted model to a LOESS smoother and 
+statistics like mean squared error (MSE) and R-squared.
+
+MSE and R-squared statistics are summaries of the overall value of the model residuals. A residual is the difference between the value of a data point predicted by a 
+model and its actual observed value.
+
+The results of a linear regression model include regression coefficients. These coefficients represent the effect their respective predictor variable has on the 
+model’s outcome variable.
+
+In a simple linear regression, the regression coefficient represents the effect of a one-unit increase in the predictor variable.
+
+The intercept coefficient represents the value of the outcome variable given that the predictor variable is equal to zero; this coefficient isn’t always meaningful 
+and depends on the situation being modeled.
+
+The p-value associated with a regression coefficient helps us understand whether the effect of a variable is statistically significant.
+
+Multiple linear regression is similar to simple regression, except that it includes multiple predictor variables.
+
+In a multiple linear regression, the regression coefficient represents the effect of a one-unit increase in the respective predictor variable, given that all other 
+predictor variables are held constant.
+
+In both simple and multiple linear regression, boolean categorical variables represent the total effect of switching from one category to another.
