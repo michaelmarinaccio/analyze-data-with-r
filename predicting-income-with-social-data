@@ -1,0 +1,88 @@
+---
+title: "Predicting Income with Social Data"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+# load packages and data
+library(ggplot2)
+library(dplyr)
+library(modelr)
+psid <- read.csv("psid_2017.csv")
+
+```
+
+```{r}
+# view data structure
+str(psid)
+
+# plot age
+
+
+
+
+# filter to reasonable age group
+
+
+# plot flitered age
+
+
+
+# plot education
+
+
+
+# filter to reasonable education levels
+
+
+
+# plot income
+
+
+
+# view income summary statistics
+
+
+# plot mean income by age
+
+
+
+# subset data points into train and test sets
+set.seed(123)
+sample <- sample(c(TRUE, FALSE), nrow(psid), replace = T, prob = c(0.6,0.4))
+
+# define train and test
+
+
+
+# build model
+
+
+
+# plot against LOESS model
+
+
+
+# compute r-squared
+
+
+# uncomment to write out r-squared interpretation
+# sprintf("Based on a simple linear regression model, we have determined that %s percent of the variation in respondent income can be predicted by a respondent's education level.", r_sq)
+
+# build second model
+
+
+# uncomment to write out r-squared interpretation
+# sprintf("Based on a simple linear regression model, we have determined that %s percent of the variation in respondent income can be predicted by a respondent's education level, age and gender.", r_sq_2)
+
+# plot predictions versus observed
+
+
+# write out model results
+
+# extract education coefficent
+
+
+# uncomment to write out coefficent interpretation
+# sprintf("Based on a multiple linear regression model of education, age, and gender, for every additional year of formal education, the average American resident's income increases by $%s.", education_coefficent)
+```
